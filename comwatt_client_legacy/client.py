@@ -1,5 +1,4 @@
 import hashlib
-import json
 import requests
 from datetime import datetime
 
@@ -83,7 +82,7 @@ class ComwattClient:
 
         """
 
-        url = f'{self.base_url}/api/indepboxes?ownerid={owner_id}'
+        url = f'{self.base_url}/indepboxes?ownerid={owner_id}'
 
         response = self.session.get(url)
         if response.status_code == 200:
@@ -91,12 +90,12 @@ class ComwattClient:
         else:
             raise Exception(f'Error retrieving owner details : {response.status_code}')
 
-    def get_box_details(self, box_id):
+    def get_box_details(self, macAddress):
         """
         Retrieves information about the box's details.
 
         Args:
-            box_id (str): The ID of the box.
+            macAddress (str): The ID of the box.
 
         Returns:
             dict: Information about the box.
@@ -106,8 +105,8 @@ class ComwattClient:
 
         """
 
-        url = f'{self.base_url}/api/indepboxes/byMacAddress/{box_id}'
-
+        url = f'{self.base_url}/indepboxes/byMacAddress/{macAddress}'
+        
         response = self.session.get(url)
         if response.status_code == 200:
             return response.json()
@@ -129,7 +128,7 @@ class ComwattClient:
 
         """
 
-        url = f'{self.base_url}/api/products/1'
+        url = f'{self.base_url}/products/'
 
         response = self.session.get(url)
         if response.status_code == 200:
@@ -152,7 +151,7 @@ class ComwattClient:
 
         """
 
-        url = f'{self.base_url}/api/devices?indepbox_id={indepbox_id}'
+        url = f'{self.base_url}/devices?indepbox_id={indepbox_id}'
 
         response = self.session.get(url)
         if response.status_code == 200:
@@ -193,13 +192,15 @@ class ComwattClient:
 
         """
 
-        url = (f'{self.base_url}/api/aggregations/networkstats?indepbox_id={indepbox_id}&'
-               f'level={level}&'
-               f'measure_kind={measure_kind}&'
-               f'start={start}&'
-               f'end={end}&'
-               f'mm=')
+        start_str = start.strftime('%Y-%m-%d %H:%M:%S').replace(' ', '%20')
+        end_str = end.strftime('%Y-%m-%d %H:%M:%S').replace(' ', '%20')
 
+        url = (f'{self.base_url}/aggregations/networkstats?indepbox_id={indepbox_id}&'
+            f'level={level}&'
+            f'measure_kind={measure_kind}&'
+            f'start={start_str}&'
+            f'end={end_str}')
+        
         response = self.session.get(url)
         if response.status_code == 200:
             return response.json()
@@ -207,7 +208,7 @@ class ComwattClient:
             raise Exception(f'Error retrieving networkstats: {response.status_code}')
 
     def get_devices_stats(self, device_id,
-                          measure_kind="VIRTUAL_QUANTITY",
+                          measure_kind="QUANTITY",
                           measure_type_id="1",
                           level="HOUR",
                           start=datetime.now(),
@@ -231,11 +232,14 @@ class ComwattClient:
             Exception: If an error occurs while retrieving the devices_stats.
         """
 
-        url = (f'{self.base_url}/api/aggregations/raw?device_id={device_id}&'
+        start_str = start.strftime('%Y-%m-%d %H:%M:%S').replace(' ', '%20')
+        end_str = end.strftime('%Y-%m-%d %H:%M:%S').replace(' ', '%20')
+
+        url = (f'{self.base_url}/aggregations/raw?device_id={device_id}&'
                f'level={level}&'
                f'measure_kind={measure_kind}&'
-               f'start={start}&'
-               f'end={end}&'
+               f'start={start_str}&'
+               f'end={end_str}&'
                f'measure_type_id={measure_type_id}&'
                f'mm=')
 
